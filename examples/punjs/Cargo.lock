@@ -108,17 +108,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8371e4e5341c3a96db127eb2465ac681ced4c433e01dd0e938adbef26ba93ba5"
 
 [[package]]
-name = "litejs"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "clap",
- "rusty_jsc",
- "rusty_jsc_macros",
- "rusty_jsc_sys",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -170,6 +159,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "punjs"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "rusty_jsc",
+ "rusty_jsc_macros",
+ "rusty_jsc_sys",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -180,16 +180,15 @@ dependencies = [
 
 [[package]]
 name = "rusty_jsc"
-version = "0.0.2"
+version = "0.1.0"
 dependencies = [
- "anyhow",
  "rusty_jsc_macros",
  "rusty_jsc_sys",
 ]
 
 [[package]]
 name = "rusty_jsc_macros"
-version = "0.0.2"
+version = "0.1.0"
 dependencies = [
  "pkg-config",
  "quote",
@@ -198,7 +197,7 @@ dependencies = [
 
 [[package]]
 name = "rusty_jsc_sys"
-version = "0.0.2"
+version = "0.1.0"
 dependencies = [
  "pkg-config",
 ]
