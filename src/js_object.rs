@@ -313,3 +313,9 @@ impl From<JSObject> for JSObjectRef {
         val.inner
     }
 }
+
+impl From<JSObject> for JSValue {
+    fn from(value: JSObject) -> Self {
+        JSValue { inner: value.inner }
+    }
+}
