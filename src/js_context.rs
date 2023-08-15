@@ -19,6 +19,8 @@ impl fmt::Debug for JSContext {
     }
 }
 
+unsafe impl Send for JSContext {}
+
 impl Default for JSContext {
     fn default() -> Self {
         JSContext::new()
