@@ -95,7 +95,7 @@ impl JSContext {
     /// exception, this function returns `None`. You can query the thrown
     /// exception with the `get_exception` method.
     pub fn evaluate_script(
-        &mut self,
+        &self,
         script: &str,
         starting_line_number: i32,
     ) -> Result<JSValue, JSValue> {

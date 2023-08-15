@@ -31,7 +31,7 @@ where
 }
 
 fn main() {
-    let mut context = JSContext::default();
+    let context = JSContext::default();
     let callback = JSValue::callback(&context, Some(foo));
     let global = context.get_global_object();
     global.set_property(&context, "foo", callback).unwrap();

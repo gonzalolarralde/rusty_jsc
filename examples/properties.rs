@@ -1,7 +1,7 @@
 use rusty_jsc::{JSContext, JSValue};
 
 fn main() {
-    let mut context = JSContext::default();
+    let context = JSContext::default();
     let global = context.get_global_object();
     let hello = JSValue::string(&context, "hello, world!");
     global.set_property(&context, "hello", hello).unwrap();
