@@ -28,7 +28,7 @@ impl JSObject {
 
     pub fn new(context: &JSContext) -> Self {
         let null = std::ptr::null_mut();
-        let o_ref = unsafe { JSObjectMake(context.inner, null, null as _) };
+        let o_ref = unsafe { JSObjectMake(context.inner(), null, null as _) };
         Self::from(o_ref)
     }
 
@@ -38,7 +38,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let o_ref = unsafe {
             JSObjectMakeArray(
-                context.inner,
+                context.inner(),
                 args.len() as _,
                 args_refs.as_slice().as_ptr(),
                 &mut exception,
@@ -57,7 +57,7 @@ impl JSObject {
     ) -> Self {
         let name = name.into();
         let o_ref =
-            unsafe { JSObjectMakeFunctionWithCallback(context.inner, name.inner, callback) };
+            unsafe { JSObjectMakeFunctionWithCallback(context.inner(), name.inner, callback) };
         Self::from(o_ref)
     }
 
@@ -67,7 +67,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let result = unsafe {
             JSObjectCallAsConstructor(
-                context.inner,
+                context.inner(),
                 self.inner,
                 args.len() as _,
                 args_refs.as_slice().as_ptr(),
@@ -100,7 +100,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let result = unsafe {
             JSObjectCallAsFunction(
-                context.inner,
+                context.inner(),
                 self.inner,
                 this.map(|t| t.inner)
                     .unwrap_or_else(|| std::ptr::null_mut()),
@@ -137,7 +137,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let result = unsafe {
             JSObjectMakeTypedArrayWithBytesNoCopy(
-                context.inner,
+                context.inner(),
                 JSTypedArrayType_kJSTypedArrayTypeUint8Array,
                 bytes.as_mut_ptr() as _,
                 bytes.len() as _,
@@ -165,7 +165,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let result = unsafe {
             JSObjectMakeTypedArrayWithArrayBuffer(
-                context.inner,
+                context.inner(),
                 JSTypedArrayType_kJSTypedArrayTypeUint8Array,
                 buffer.inner,
                 &mut exception,
@@ -186,9 +186,9 @@ impl JSObject {
     pub fn get_typed_array_buffer(&self, context: &JSContext) -> Result<&mut [u8], JSValue> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let arr_ptr =
-            unsafe { JSObjectGetTypedArrayBytesPtr(context.inner, self.inner, &mut exception) };
+            unsafe { JSObjectGetTypedArrayBytesPtr(context.inner(), self.inner, &mut exception) };
         let arr_len =
-            unsafe { JSObjectGetTypedArrayLength(context.inner, self.inner, &mut exception) };
+            unsafe { JSObjectGetTypedArrayLength(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
             return Err(JSValue::from(exception));
         }
@@ -202,7 +202,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let jsvalue_ref = unsafe {
             JSObjectGetProperty(
-                context.inner,
+                context.inner(),
                 self.inner,
                 property_name.inner,
                 &mut exception,
@@ -219,7 +219,7 @@ impl JSObject {
     ) -> Result<JSValue, JSValue> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let property = unsafe {
-            JSObjectGetPropertyAtIndex(context.inner, self.inner, property_index, &mut exception)
+            JSObjectGetPropertyAtIndex(context.inner(), self.inner, property_index, &mut exception)
         };
         if !exception.is_null() {
             return Err(JSValue::from(exception));
@@ -228,7 +228,7 @@ impl JSObject {
     }
 
     pub fn get_property_names(&mut self, context: &JSContext) -> Vec<String> {
-        let property_name_array = unsafe { JSObjectCopyPropertyNames(context.inner, self.inner) };
+        let property_name_array = unsafe { JSObjectCopyPropertyNames(context.inner(), self.inner) };
         let num_properties = unsafe { JSPropertyNameArrayGetCount(property_name_array) };
         (0..num_properties)
             .map(|property_index| {
@@ -244,12 +244,12 @@ impl JSObject {
     pub fn get_array_buffer(&mut self, context: &JSContext) -> Result<&mut [u8], JSValue> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let arr_ptr =
-            unsafe { JSObjectGetArrayBufferBytesPtr(context.inner, self.inner, &mut exception) };
+            unsafe { JSObjectGetArrayBufferBytesPtr(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
             return Err(JSValue::from(exception));
         }
         let arr_len =
-            unsafe { JSObjectGetArrayBufferByteLength(context.inner, self.inner, &mut exception) };
+            unsafe { JSObjectGetArrayBufferByteLength(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
             return Err(JSValue::from(exception));
         }
@@ -269,7 +269,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         unsafe {
             JSObjectSetProperty(
-                context.inner,
+                context.inner(),
                 self.inner,
                 property_name.inner,
                 value.inner,
@@ -293,7 +293,7 @@ impl JSObject {
         let mut exception: JSValueRef = std::ptr::null_mut();
         unsafe {
             JSObjectSetPropertyAtIndex(
-                context.inner,
+                context.inner(),
                 self.inner,
                 index,
                 value.inner,

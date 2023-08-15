@@ -24,6 +24,7 @@
 //! ```
 
 mod internal;
+mod helpers;
 
 // #[macro_export]
 mod closure;
@@ -35,9 +36,6 @@ pub mod private {
 }
 
 // pub use crate::closure::callback_closure;
-
-mod js_vm;
-pub use js_vm::*;
 
 mod js_context;
 pub use js_context::*;

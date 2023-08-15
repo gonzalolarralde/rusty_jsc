@@ -2,14 +2,15 @@ use crate::internal::JSString;
 use rusty_jsc_sys::*;
 use std::fmt;
 
-use crate::js_vm::JSVirtualMachine;
+use crate::helpers::RetainReleaseWrapper;
+
 use crate::js_value::JSValue;
 use crate::js_object::JSObject;
 
 /// A JavaScript execution context.
 pub struct JSContext {
-    pub(crate) inner: JSContextRef,
-    pub(crate) vm: JSVirtualMachine,
+    pub(crate) context_group: RetainReleaseWrapper<JSContextGroupRef>,
+    pub(crate) inner: RetainReleaseWrapper<JSGlobalContextRef>,
 }
 
 impl fmt::Debug for JSContext {
@@ -25,36 +26,60 @@ impl Default for JSContext {
 }
 
 impl JSContext {
-    /// Create a `JSContext` object from `JSContextRef`.
-    pub fn from(ctx: JSContextRef) -> Self {
-        let vm = JSVirtualMachine::from(ctx);
-        Self { inner: ctx, vm }
-    }
-
     /// Create a new `JSContext` object.
-    ///
-    /// Note that this associated function also creates a new `JSVirtualMachine`.
-    /// If you want to create a `JSContext` object within an existing virtual
-    /// machine, please use the `with_virtual_machine` associated function.
     pub fn new() -> Self {
-        let vm = JSVirtualMachine::new();
-        Self {
-            inner: vm.global_context,
-            vm,
-        }
+        let context_group = unsafe { JSContextGroupCreate() };
+        let inner = unsafe { JSGlobalContextCreateInGroup(context_group, std::ptr::null_mut()) };
+
+        Self::new_from_raw(
+            context_group,
+            inner,
+            true
+        )
     }
 
-    /// Create a new `JSContext` object within the provided `JSVirtualMachine`.
-    pub fn with_virtual_machine(vm: JSVirtualMachine) -> Self {
-        Self {
-            inner: vm.global_context,
-            vm,
-        }
+    pub fn from(inner: JSContextRef) -> Self {
+        Self::new_from_raw(
+            unsafe { JSContextGetGroup(inner) },
+            unsafe { JSContextGetGlobalContext(inner) },
+            false
+        )
     }
 
+    fn new_from_raw(context_group: JSContextGroupRef, inner: JSGlobalContextRef, already_retained: bool) -> Self {
+        let context_group = RetainReleaseWrapper::<JSContextGroupRef>::new(
+            context_group,
+            already_retained,
+            |x| unsafe { JSContextGroupRetain(x); }, 
+            |x| unsafe { JSContextGroupRelease(x) }
+        );
+
+        let inner = 
+            RetainReleaseWrapper::<JSGlobalContextRef>::new(
+                inner,
+                already_retained,
+                |x| unsafe { JSGlobalContextRetain(x); }, 
+                |x| unsafe { JSGlobalContextRelease(x); }
+            );
+
+        Self {
+            context_group,
+            inner,
+        }
+    }
+}
+
+impl JSContext {
+    #[inline(always)]
+    pub(crate) fn inner(&self) -> JSContextRef {
+        *self.inner
+    }
+}
+
+impl JSContext {
     /// Returns the context global object.
     pub fn get_global_object(&self) -> JSObject {
-        JSObject::from(unsafe { JSContextGetGlobalObject(self.inner) })
+        JSObject::from(unsafe { JSContextGetGlobalObject(self.inner()) })
     }
 
     /// Evaluate the script.
@@ -73,7 +98,7 @@ impl JSContext {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let value = unsafe {
             JSEvaluateScript(
-                self.vm.global_context,
+                self.inner(),
                 script.inner,
                 this_object,
                 source_url,

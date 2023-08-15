@@ -29,7 +29,7 @@ impl JSString {
 
     /// Calls the object constructor
     pub fn to_jsvalue(&self, context: &JSContext) -> JSValue {
-        JSValue::from(unsafe { JSValueMakeString(context.inner, self.inner) })
+        JSValue::from(unsafe { JSValueMakeString(context.inner(), self.inner) })
     }
 
     /// Constructs a JSString from a Rust `String`
