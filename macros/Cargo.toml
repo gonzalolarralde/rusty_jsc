@@ -1,6 +1,6 @@
 [package]
 name = "rusty_jsc_macros"
-version = "0.1.0"
+version = "0.2.0"
 description = "Macros for rusty_jsc"
 authors = [ "Wasmer Engineering Team <engineering@wasmer.io>", "Pekka Enberg" ]
 repository = "https://github.com/wasmerio/rusty_jsc"
