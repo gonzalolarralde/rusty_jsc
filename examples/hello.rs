@@ -6,7 +6,7 @@ fn main() {
     if let Ok(value) = value {
         println!("{}", value.to_string(&context).unwrap());
     } else {
-        let ex = value.unwrap_err().to_string(&context).unwrap();
+        let ex = value.unwrap_err().to_string();
         println!("Uncaught: {}", ex);
     }
 }

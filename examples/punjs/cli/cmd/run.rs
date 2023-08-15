@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use rusty_jsc::{JSContext, JSValue};
+use rusty_jsc::{JSContext, JSValue, JSException};
 use rusty_jsc_macros::callback;
 use std::fs;
 use std::path::PathBuf;
@@ -11,7 +11,7 @@ pub fn run(input: PathBuf) -> Result<()> {
     setup_prelude(&context);
     let result = context.evaluate_script(&script, 1);
     if let Err(ex) = result {
-        anyhow::bail!("Uncaught {}", ex.to_string(&context).unwrap());
+        anyhow::bail!("Uncaught {}", ex.to_string());
     }
     Ok(())
 }
@@ -27,13 +27,13 @@ fn setup_prelude(context: &JSContext) {
 }
 
 #[callback]
-fn require(_context: JSContext, _function: JSObject, _this: JSObject, _args: &[JSValue]) -> Result<JSValue, JSValue> {
+fn require(_context: JSContext, _function: JSObject, _this: JSObject, _args: &[JSValue]) -> Result<JSValue, JSException> {
     println!("warning: `require` is not implemented.");
     Ok(JSValue::undefined(&_context))
 }
 
 #[callback]
-fn foo(_context: JSContext, _function: JSObject, _this: JSObject, _args: &[JSValue]) -> Result<JSValue, JSValue> {
+fn foo(_context: JSContext, _function: JSObject, _this: JSObject, _args: &[JSValue]) -> Result<JSValue, JSException> {
     println!("hello from Rust land!");
     Ok(JSValue::undefined(&_context))
 }

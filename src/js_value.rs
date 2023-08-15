@@ -4,6 +4,7 @@ use rusty_jsc_sys::*;
 
 use crate::js_context::JSContext;
 use crate::js_object::JSObject;
+use crate::js_exception::JSException;
 
 /// A JavaScript value.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -91,31 +92,31 @@ impl JSValue {
     }
 
     /// Formats this value as a `String`.
-    pub fn to_string(&self, context: &JSContext) -> Result<JSString, JSValue> {
+    pub fn to_string(&self, context: &JSContext) -> Result<JSString, JSException> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let string = unsafe { JSValueToStringCopy(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
-            return Err(JSValue::from(exception));
+            return Err(JSException::new(&context, JSValue::from(exception)));
         }
         Ok(JSString::from(string))
     }
 
     // Tries to convert the value to a number
-    pub fn to_number(&self, context: &JSContext) -> Result<f64, JSValue> {
+    pub fn to_number(&self, context: &JSContext) -> Result<f64, JSException> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let num = unsafe { JSValueToNumber(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
-            return Err(JSValue::from(exception));
+            return Err(JSException::new(&context, JSValue::from(exception)));
         }
         Ok(num)
     }
 
     // Tries to convert the value to an object
-    pub fn to_object(&self, context: &JSContext) -> Result<JSObject, JSValue> {
+    pub fn to_object(&self, context: &JSContext) -> Result<JSObject, JSException> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let object_ref = unsafe { JSValueToObject(context.inner(), self.inner, &mut exception) };
         if !exception.is_null() {
-            return Err(JSValue::from(exception));
+            return Err(JSException::new(&context, JSValue::from(exception)));
         }
         let obj = JSObject::from(object_ref);
         Ok(obj)

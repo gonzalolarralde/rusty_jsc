@@ -1,9 +1,9 @@
 #[macro_export]
 macro_rules! callback_closure {
     ($ctx:expr, $closure:expr) => {{
-        use rusty_jsc::{callback, JSContext, JSObject, JSValue};
+        use rusty_jsc::{callback, JSContext, JSObject, JSValue, JSException};
         type CallbackType =
-            dyn FnMut(JSContext, JSObject, JSObject, &[JSValue]) -> Result<JSValue, JSValue>;
+            dyn FnMut(JSContext, JSObject, JSObject, &[JSValue]) -> Result<JSValue, JSException>;
 
         let mut base_callback = $closure;
 
@@ -22,7 +22,7 @@ macro_rules! callback_closure {
             function: JSObject,
             this: JSObject,
             args: &[JSValue],
-        ) -> Result<JSValue, JSValue> {
+        ) -> Result<JSValue, JSException> {
             let lparam = args[0].to_number(&ctx).unwrap() as usize;
             let callback: &mut &mut CallbackType = unsafe {
                 let closure_pointer_pointer = lparam as *mut std::ffi::c_void;

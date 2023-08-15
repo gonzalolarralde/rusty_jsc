@@ -1,4 +1,4 @@
-use rusty_jsc::{JSContext, JSValue};
+use rusty_jsc::{JSContext, JSValue, JSException};
 use rusty_jsc_macros::callback;
 
 #[callback]
@@ -7,7 +7,7 @@ fn foo(
     _function: JSObject,
     _this: JSObject,
     args: &[JSValue],
-) -> Result<JSValue, JSValue> {
+) -> Result<JSValue, JSException> {
     println!(
         "hello from Rust land! len: {}, value[0]: {}",
         args.len(),
@@ -22,7 +22,7 @@ fn foo2<A>(
     _function: JSObject,
     _this: JSObject,
     _args: &[JSValue],
-) -> Result<JSValue, JSValue>
+) -> Result<JSValue, JSException>
 where
     A: Clone,
 {
@@ -56,7 +56,7 @@ fn main() {
             println!("{}", value.to_string(&context).unwrap());
         }
         Err(e) => {
-            println!("Uncaught: {}", e.to_string(&context).unwrap())
+            println!("Uncaught: {}", e.to_string())
         }
     }
 }

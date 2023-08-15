@@ -55,7 +55,7 @@ pub fn callback(_attr: TokenStream, item: TokenStream) -> TokenStream {
             };
             let #args_var_name: &[JSValue] = &#args_var_name;
 
-            let res: Result<JSValue, JSValue> = #block;
+            let res: Result<JSValue, JSException> = #block;
             match res {
                 Ok(res) => res.into(),
                 Err(err) => {

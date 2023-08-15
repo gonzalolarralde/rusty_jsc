@@ -10,7 +10,7 @@ fn main() {
             println!("{}", value.to_string(&context).unwrap());
         }
         Err(e) => {
-            println!("Uncaught: {}", e.to_string(&context).unwrap())
+            println!("Uncaught: {}", e.to_string())
         }
     }
 }

@@ -6,6 +6,7 @@ use crate::helpers::RetainReleaseWrapper;
 
 use crate::js_value::JSValue;
 use crate::js_object::JSObject;
+use crate::JSException;
 
 /// A JavaScript execution context.
 pub struct JSContext {
@@ -100,7 +101,7 @@ impl JSContext {
         &self,
         script: &str,
         starting_line_number: i32,
-    ) -> Result<JSValue, JSValue> {
+    ) -> Result<JSValue, JSException> {
         let script = JSString::from_utf8(script.to_string());
         let this_object = std::ptr::null_mut();
         let source_url = std::ptr::null_mut();
@@ -116,7 +117,7 @@ impl JSContext {
             )
         };
         if !exception.is_null() {
-            return Err(JSValue::from(exception));
+            return Err(JSException::new(self, JSValue::from(exception)));
         }
         Ok(JSValue::from(value))
     }
