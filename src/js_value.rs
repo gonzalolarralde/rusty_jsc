@@ -56,6 +56,14 @@ impl JSValue {
         JSValue::from(func)
     }
 
+    pub fn from_json(context: &JSContext, json_string: String) -> Result<Self, JSException> {
+        let value_ref = unsafe { JSValueMakeFromJSONString(context.inner(), JSString::from_utf8(json_string).inner) };
+        if value_ref.is_null() {
+            return Err(JSException::from_string(&context, "JSON input is not valid.".to_string()));
+        }
+        Ok(JSValue::from(value_ref))
+    }
+
     /// Checks if this value is `undefined`.
     pub fn is_undefined(&self, context: &JSContext) -> bool {
         unsafe { JSValueIsUndefined(context.inner(), self.inner) }
@@ -120,6 +128,20 @@ impl JSValue {
         }
         let obj = JSObject::from(object_ref);
         Ok(obj)
+    }
+
+    pub fn to_json(&self, context: &JSContext) -> Result<String, JSException> {
+        self.to_indented_json(&context, 0)
+    }
+
+    pub fn to_indented_json(&self, context: &JSContext, indent: u32) -> Result<String, JSException> {
+        let mut exception: JSValueRef = std::ptr::null_mut();
+        let string_ref = unsafe { JSValueCreateJSONString(context.inner(), self.inner, indent, &mut exception) };
+        if !exception.is_null() {
+            return Err(JSException::new(&context, JSValue::from(exception)));
+        }
+        let obj = JSString::from(string_ref);
+        Ok(obj.to_string())
     }
 }
 
