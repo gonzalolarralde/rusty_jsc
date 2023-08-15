@@ -38,14 +38,6 @@ impl JSContext {
         )
     }
 
-    pub fn from(inner: JSContextRef) -> Self {
-        Self::new_from_raw(
-            unsafe { JSContextGetGroup(inner) },
-            unsafe { JSContextGetGlobalContext(inner) },
-            false
-        )
-    }
-
     fn new_from_raw(context_group: JSContextGroupRef, inner: JSGlobalContextRef, already_retained: bool) -> Self {
         let context_group = RetainReleaseWrapper::<JSContextGroupRef>::new(
             context_group,
@@ -111,4 +103,14 @@ impl JSContext {
         }
         Ok(JSValue::from(value))
     }
+}
+
+impl From<JSContextRef> for JSContext {
+    fn from(inner: rusty_jsc_sys::JSContextRef) -> Self {
+        Self::new_from_raw(
+            unsafe { rusty_jsc_sys::JSContextGetGroup(inner) },
+            unsafe { rusty_jsc_sys::JSContextGetGlobalContext(inner) },
+            false
+        )
+    }    
 }
