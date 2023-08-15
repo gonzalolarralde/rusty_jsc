@@ -1,11 +1,11 @@
-use rusty_jsc::{JSContext, JSObject, JSValue};
+use rusty_jsc::{JSContext, JSValue};
 use rusty_jsc_macros::callback;
 
 #[callback]
 fn foo(
     ctx: JSContext,
-    function: JSObject,
-    this: JSObject,
+    _function: JSObject,
+    _this: JSObject,
     args: &[JSValue],
 ) -> Result<JSValue, JSValue> {
     println!(
@@ -19,9 +19,9 @@ fn foo(
 #[callback]
 fn foo2<A>(
     ctx: JSContext,
-    function: JSObject,
-    this: JSObject,
-    args: &[JSValue],
+    _function: JSObject,
+    _this: JSObject,
+    _args: &[JSValue],
 ) -> Result<JSValue, JSValue>
 where
     A: Clone,
