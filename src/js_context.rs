@@ -33,15 +33,30 @@ impl JSContext {
 
         Self::new_from_raw(
             context_group,
+            true,
             inner,
             true
         )
     }
 
-    fn new_from_raw(context_group: JSContextGroupRef, inner: JSGlobalContextRef, already_retained: bool) -> Self {
+    /// Create a new `JSContext` in the same group as `self`. These new independent context will be able
+    /// to share objects but they will have different execution paths. This enables multithreaded execution.
+    pub fn new_sibling(&self) -> Self {
+        let context_group = *self.context_group;
+        let inner = unsafe { JSGlobalContextCreateInGroup(context_group, std::ptr::null_mut()) };
+
+        Self::new_from_raw(
+            context_group,
+            false,
+            inner,
+            true
+        )
+    }
+
+    fn new_from_raw(context_group: JSContextGroupRef, context_group_already_retained: bool, inner: JSGlobalContextRef, inner_already_retained: bool) -> Self {
         let context_group = RetainReleaseWrapper::<JSContextGroupRef>::new(
             context_group,
-            already_retained,
+            context_group_already_retained,
             |x| unsafe { JSContextGroupRetain(x); }, 
             |x| unsafe { JSContextGroupRelease(x) }
         );
@@ -49,7 +64,7 @@ impl JSContext {
         let inner = 
             RetainReleaseWrapper::<JSGlobalContextRef>::new(
                 inner,
-                already_retained,
+                inner_already_retained,
                 |x| unsafe { JSGlobalContextRetain(x); }, 
                 |x| unsafe { JSGlobalContextRelease(x); }
             );
@@ -109,6 +124,7 @@ impl From<JSContextRef> for JSContext {
     fn from(inner: rusty_jsc_sys::JSContextRef) -> Self {
         Self::new_from_raw(
             unsafe { rusty_jsc_sys::JSContextGetGroup(inner) },
+            false,
             unsafe { rusty_jsc_sys::JSContextGetGlobalContext(inner) },
             false
         )
