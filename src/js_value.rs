@@ -147,3 +147,15 @@ impl JSValue {
 
 unsafe impl Send for JSValue {}
 unsafe impl Sync for JSValue {}
+
+impl From<JSValueRef> for JSValue {
+    fn from(val: JSValueRef) -> Self {
+        JSValue::from(val)
+    }
+}
+
+impl From<JSValue> for JSValueRef {
+    fn from(val: JSValue) -> Self {
+        val.inner
+    }
+}

@@ -308,18 +308,6 @@ impl From<JSObjectRef> for JSObject {
     }
 }
 
-impl From<JSValueRef> for JSValue {
-    fn from(val: JSValueRef) -> Self {
-        JSValue::from(val)
-    }
-}
-
-impl From<JSValue> for JSValueRef {
-    fn from(val: JSValue) -> Self {
-        val.inner
-    }
-}
-
 impl From<JSObject> for JSObjectRef {
     fn from(val: JSObject) -> JSObjectRef {
         val.inner
