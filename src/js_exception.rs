@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::error::Error;
 use std::fmt::Display;
 
@@ -15,7 +14,7 @@ enum JSExceptionBody {
 /// A JavaScript exception, formally a value.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct JSException {
-    body: RefCell<JSExceptionBody>,
+    body: JSExceptionBody,
     location: String,
 }
 
@@ -39,14 +38,10 @@ impl JSException {
     }
 
     pub fn to_jsvalue(&self, context: &JSContext) -> JSValue {
-        match &*self.body.borrow() {
+        match &self.body {
             JSExceptionBody::JSValue(value) => value.clone(),
             JSExceptionBody::JSValueWithRepresentation(value, _) => value.clone(),
-            JSExceptionBody::String(string) => {
-                let value = JSValue::string(&context, string.clone());
-                self.body.replace(JSExceptionBody::JSValueWithRepresentation(value.clone(), string.clone()));
-                value
-            }
+            JSExceptionBody::String(string) => JSValue::string(&context, string.clone()),
         }
     }
 }
@@ -55,7 +50,7 @@ impl Error for JSException {}
 
 impl Display for JSException {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let message = match &*self.body.borrow() {
+        let message = match &self.body {
             JSExceptionBody::JSValue(value) => format!("<error is not representable. JSValueRef={:p}>", value.inner),
             JSExceptionBody::JSValueWithRepresentation(_, msg) => msg.clone(),
             JSExceptionBody::String(msg) => msg.clone(),
