@@ -1,6 +1,8 @@
 use crate::internal::JSString;
 use rusty_jsc_sys::JSObjectCallAsFunctionCallback;
 use rusty_jsc_sys::*;
+use bytes::Bytes;
+use std::{ptr, os::raw::c_void};
 
 use crate::js_context::JSContext;
 use crate::js_value::JSValue;
@@ -130,28 +132,60 @@ impl JSObject {
 
     pub fn create_typed_array_with_bytes(
         context: &JSContext,
-        bytes: &mut [u8],
+        bytes: Bytes,
     ) -> Result<Self, JSException> {
-        let deallocator_ctx = std::ptr::null_mut();
+        let len = bytes.len();
+        let data_ptr = bytes.as_ptr() as *mut u8;
+    
+        extern "C" fn deallocate_bytes(_ptr: *mut c_void, context: *mut c_void) {
+            unsafe {
+                // Convert the raw pointer back into Box<Bytes> and then drop it.
+                let _: Box<Bytes> = Box::from_raw(context as *mut Bytes);
+                // The Box goes out of scope here and deallocates the Bytes.
+            }
+        }
+    
+        // Leak the Bytes to ensure it doesn't get prematurely deallocated.
+        // We will clean up in the deallocate_bytes function.
+        let leaked_bytes = Box::leak(Box::new(bytes));
+    
         let mut exception: JSValueRef = std::ptr::null_mut();
         let result = unsafe {
             JSObjectMakeTypedArrayWithBytesNoCopy(
                 context.inner(),
                 JSTypedArrayType_kJSTypedArrayTypeUint8Array,
-                bytes.as_mut_ptr() as _,
-                bytes.len() as _,
-                None,
-                deallocator_ctx,
+                data_ptr as _,
+                len as _,
+                Some(deallocate_bytes),
+                leaked_bytes as *const _ as *mut _,
                 &mut exception,
             )
         };
+
         if !exception.is_null() {
             return Err(JSException::new(&context, JSValue::from(exception)));
         }
         if result.is_null() {
-            return Err(JSException::from("Can't create a type array"));
+            // An exception would cause the deallocator to be called, but there's no explicit reference
+            // for when NULL is returned but no exception was thrown. Might not even be possible for
+            // that to happen. TODO: Investigate under what circumstances, if any, this scenario could
+            // happen and figure out what is the right approach to ensure a correct memory management.
+            deallocate_bytes(ptr::null_mut(), leaked_bytes as *const _ as *mut _);
+            return Err(JSException::from("Can't create a typed array"));
         }
-        Ok(Self::from(result))
+
+        let object = Self::from(result);
+
+        // There's no need to explicitly call the deallocator in case of a failure here because the
+        // array creation succeeded, so what should happen in case of a failure here is that the
+        // garbage collector should take away the failed-to-be-created reference and _that_ should
+        // call the deallocator.
+        context.get_global_object()
+            .get_property(&context, "Object").to_object(&context)?
+            .get_property(&context, "freeze").to_object(&context)?
+            .call(&context, None, &[object.to_jsvalue()])?;
+
+        Ok(object)
     }
 
     pub fn create_typed_array_from_buffer(

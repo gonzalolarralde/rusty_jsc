@@ -13,3 +13,4 @@ edition = "2021"
 [dependencies]
 rusty_jsc_macros = { path = "./macros", version = "0.2.0" }
 rusty_jsc_sys = { path = "./sys", version = "0.2.0" }
+bytes = "1.4"
