@@ -46,6 +46,9 @@ pub use js_value::*;
 mod js_object;
 pub use js_object::*;
 
+mod js_promise;
+pub use js_promise::*;
+
 mod js_exception;
 pub use js_exception::*;
 
