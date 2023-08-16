@@ -56,7 +56,7 @@ impl Display for JSException {
             JSExceptionBody::String(msg) => msg.clone(),
         };
 
-        write!(f, "JSError {}: {}", self.location, message)
+        write!(f, "JSException {}: {}", self.location, message)
     }
 }
 
