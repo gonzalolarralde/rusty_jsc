@@ -59,7 +59,7 @@ impl JSValue {
     pub fn from_json(context: &JSContext, json_string: String) -> Result<Self, JSException> {
         let value_ref = unsafe { JSValueMakeFromJSONString(context.inner(), JSString::from_utf8(json_string).inner) };
         if value_ref.is_null() {
-            return Err(JSException::from_string(&context, "JSON input is not valid.".to_string()));
+            return Err(JSException::from("JSON input is not valid.".to_string()));
         }
         Ok(JSValue::from(value_ref))
     }

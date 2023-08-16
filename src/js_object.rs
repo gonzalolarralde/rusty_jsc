@@ -79,7 +79,7 @@ impl JSObject {
             return Err(JSException::new(&context, JSValue::from(exception)));
         }
         if result.is_null() {
-            return Err(JSException::from_string(&context, 
+            return Err(JSException::from(
                 format!(
                     "Can't call constructor for {:?}: not a valid constructor",
                     self.to_jsvalue().to_string(context)
@@ -113,7 +113,7 @@ impl JSObject {
             return Err(JSException::new(&context, JSValue::from(exception)));
         }
         if result.is_null() {
-            return Err(JSException::from_string(&context,
+            return Err(JSException::from(
                 format!(
                     "Can't call the object {:?}: not a valid function",
                     self.to_jsvalue().to_string(context)
@@ -149,8 +149,7 @@ impl JSObject {
             return Err(JSException::new(&context, JSValue::from(exception)));
         }
         if result.is_null() {
-            return Err(JSException::from_string(
-                &context, "Can't create a type array".to_string()));
+            return Err(JSException::from("Can't create a type array"));
         }
         Ok(Self::from(result))
     }
@@ -172,8 +171,7 @@ impl JSObject {
             return Err(JSException::new(&context, JSValue::from(exception)));
         }
         if result.is_null() {
-            return Err(JSException::from_string(
-                &context, "Can't create a typed array from the provided buffer".to_string()));
+            return Err(JSException::from("Can't create a typed array from the provided buffer"));
         }
         Ok(Self::from(result))
     }
@@ -211,13 +209,13 @@ impl JSObject {
         &self,
         context: &JSContext,
         property_index: u32,
-    ) -> Result<JSValue, JSValue> {
+    ) -> Result<JSValue, JSException> {
         let mut exception: JSValueRef = std::ptr::null_mut();
         let property = unsafe {
             JSObjectGetPropertyAtIndex(context.inner(), self.inner, property_index, &mut exception)
         };
         if !exception.is_null() {
-            return Err(JSValue::from(exception));
+            return Err(JSException::new(&context, JSValue::from(exception)));
         }
         Ok(JSValue::from(property))
     }

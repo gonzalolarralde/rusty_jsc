@@ -59,8 +59,8 @@ pub fn callback(_attr: TokenStream, item: TokenStream) -> TokenStream {
             match res {
                 Ok(res) => res.into(),
                 Err(err) => {
-                    *__exception = err.into();
                     let ctx2 = rusty_jsc::JSContext::from(__base_ctx);
+                    *__exception = err.to_jsvalue(&ctx2).into();
                     rusty_jsc::JSValue::undefined(&ctx2).into()
                 }
             }
