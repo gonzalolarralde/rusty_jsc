@@ -20,7 +20,7 @@ pub struct JSException {
 
 impl JSException {
     #[track_caller]
-    pub(crate) fn new(context: &JSContext, value: JSValue) -> Self {
+    pub fn new(context: &JSContext, value: JSValue) -> Self {
         let location = std::panic::Location::caller().to_string();
 
         let string_representation = match value.to_string(&context) {
