@@ -9,6 +9,7 @@ use crate::js_object::JSObject;
 use crate::JSException;
 
 /// A JavaScript execution context.
+#[derive(Clone)]
 pub struct JSContext {
     pub(crate) context_group: RetainReleaseWrapper<JSContextGroupRef>,
     pub(crate) inner: RetainReleaseWrapper<JSGlobalContextRef>,
