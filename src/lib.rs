@@ -48,3 +48,5 @@ pub use js_object::*;
 
 mod js_exception;
 pub use js_exception::*;
+
+mod js_protected_value;
